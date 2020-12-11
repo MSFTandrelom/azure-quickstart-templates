@@ -74,7 +74,6 @@
     "samplePowerShellRunbookName": "Storage_Consumption_Runbook",
     "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
     "artifactsLocation": "https://andrelomshareddocs.blob.core.windows.net/shared",
-    "automationJobName": "StorageAccount_Checker",
     "AlertName": "Storage_Consumption_Alert",
     "ScheduleName":"1HourSchedule"
   },
@@ -127,25 +126,7 @@
               "version": "1.0.0.0"
             }
           }
-        },
-        {
-          "type": "jobSchedules",
-          "apiVersion": "2015-10-31",
-          "name": "[variables('ScheduleName')]",
-          "dependsOn": [
-            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-            "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),variables('ScheduleName'))]",
-            "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
-          ],
-          "properties": {
-            "runbook": {
-              "name": "[variables('automationJobName')]"
-            },
-            "schedule": {
-              "name": "[variables('ScheduleName')]"
-            }
-          }
-        },
+        },        
         {
           "type": "Microsoft.Automation/automationAccounts/modules",
           "apiVersion": "2015-10-31",
@@ -228,20 +209,6 @@
       ],
       "properties": {
         "resourceId": "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
-      }
-    },
-    {
-      "type": "Microsoft.Automation/automationAccounts/jobs",
-      "apiVersion": "2017-05-15-preview",
-      "name": "[concat(parameters('AutomationAccountName'),'/',variables('automationJobName'))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-        "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
-      ],
-      "properties": {
-        "runbook": {
-          "name": "[variables('samplePowerShellRunbookName')]"
-        }
       }
     },
     {
