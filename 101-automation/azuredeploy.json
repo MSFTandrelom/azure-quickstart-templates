@@ -239,14 +239,14 @@
       ],
       "properties": {
         "runbook": {
-          "name": "Storage_Size_Checker"
+          "name": "[variables('samplePowerShellRunbookName')]"
         }
       }
     },
     {
       "type": "Microsoft.Automation/automationAccounts/schedules",
       "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'),'/','1 Hour recurrence')]",
+      "name": "[concat(parameters('AutomationAccountName'),'/','1HourRecurrence')]",
       "dependsOn": [
         "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
       ],
