@@ -75,7 +75,7 @@
       "type": "Microsoft.Automation/automationAccounts",
       "apiVersion": "2020-01-13-preview",
       "name": "[parameters('automationAccountName')]",
-      "location": "[parameters('DeploymentLocation')]",
+      "location": "[resourceGroup().location]",
       "dependsOn": [
         "[parameters('LogAnalyticsWorkspaceName')]"
       ],
