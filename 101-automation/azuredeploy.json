@@ -58,8 +58,8 @@
   "variables":{
         "samplePowerShellRunbookName": "AzureAutomationTutorialScript",
         "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
-        "artifactsLocation":"https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-automation/",
-        "scriptname":""
+        "artifactsLocation":"https://andrelomsharedstorage.blob.core.windows.net/shared",
+        "scriptname":"Check-BlobSize.ps1"
   },
   "resources": [
     {
