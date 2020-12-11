@@ -2,14 +2,14 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "workspaceName": {
+    "LogAnalyticsWorkspaceName": {
       "value": "GEN-UNIQUE"
     },
-    "automationAccountName": {
+    "AutomationAccountName": {
       "value": "GEN-UNIQUE"
     },
-    "automationAccountLocation": {
-      "value": "eastus2"
+    "DeploymentLocation": {
+      "value": "westeurope"
     }
   }
 }
