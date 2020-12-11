@@ -122,7 +122,7 @@
             "logVerbose": "false",
             "description": "[variables('samplePowerShellRunbookDescription')]",
             "publishContentLink": {
-              "uri": "[uri(variables('artifactsLocation'), concat(parameters('scriptname'), parameters('artifactsLocationSasToken')))]",
+              "uri": "[concat(variables('artifactsLocation'),'/', parameters('scriptname'), parameters('artifactsLocationSasToken'))]",
               "version": "1.0.0.0"
             }
           }
@@ -251,7 +251,7 @@
         "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
       ],
       "properties": {
-        "startTime": "[dateTimeAdd(utcnow('u'),'PT5M')]",
+        "startTime": "[dateTimeAdd(utcNow('u'),'PT5M')]",
         "expiryTime": "9999-12-31T23:59:59.9999999+00:00",
         "interval": 1,
         "frequency": "Hour",
