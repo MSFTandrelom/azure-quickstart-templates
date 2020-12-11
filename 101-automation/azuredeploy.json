@@ -41,6 +41,7 @@
     },
     "DeploymentLocation": {
       "type": "string",
+      "defaultValue": "West Europe",
       "metadata": {
         "description": "Specifies the location in which to perform the deployment"
       }
