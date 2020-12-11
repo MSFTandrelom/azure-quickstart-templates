@@ -131,7 +131,7 @@
         {
           "type": "jobSchedules",
           "apiVersion": "2015-10-31",
-          "name": "variables('automationScheduleName'))]",
+          "name": "[variables('ScheduleName')]",
           "dependsOn": [
             "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
             "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),variables('ScheduleName'))]",
