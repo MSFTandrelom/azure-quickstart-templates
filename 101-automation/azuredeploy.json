@@ -75,7 +75,8 @@
     "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
     "artifactsLocation": "https://andrelomshareddocs.blob.core.windows.net/shared",
     "automationJobName": "StorageAccount_Checker",
-    "AlertName": "Storage_Consumption_Alert"
+    "AlertName": "Storage_Consumption_Alert",
+    "ScheduleName":"[variables('ScheduleName')]"
   },
   "resources": [
     {
@@ -133,7 +134,7 @@
           "name": "variables('automationScheduleName'))]",
           "dependsOn": [
             "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-            "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),'1HourRecurrence')]",
+            "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),variables('ScheduleName'))]",
             "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
           ],
           "properties": {
@@ -141,7 +142,7 @@
               "name": "[variables('automationJobName')]"
             },
             "schedule": {
-              "name": "1 Hour recurrence"
+              "name": "[variables('ScheduleName')]"
             }
           }
         },
@@ -246,7 +247,7 @@
     {
       "type": "Microsoft.Automation/automationAccounts/schedules",
       "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'),'/','1HourRecurrence')]",
+      "name": "[concat(parameters('AutomationAccountName'),'/',variables('ScheduleName'))]",
       "dependsOn": [
         "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
       ],
