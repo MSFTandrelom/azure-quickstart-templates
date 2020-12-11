@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.3",
+  "contentVersion": "1.0.0.4",
   "parameters": {
     "LogAnalyticsWorkspaceName": {
       "type": "string",
@@ -71,11 +71,10 @@
   },
 
   "variables": {
-    "samplePowerShellRunbookName": "AzureAutomationTutorialScript",
+    "samplePowerShellRunbookName": "Storage_Consumption_Runbook",
     "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
     "artifactsLocation": "https://andrelomshareddocs.blob.core.windows.net/shared",
     "automationJobName": "StorageAccount_Checker",
-    "automationScheduleName": "StorageAccount_Checker_Schedule",
     "AlertName": "Storage_Consumption_Alert"
   },
   "resources": [
@@ -101,7 +100,7 @@
       "name": "[parameters('automationAccountName')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[parameters('LogAnalyticsWorkspaceName')]"
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('LogAnalyticsWorkspaceName'))]"
       ],
       "properties": {
         "sku": {
@@ -115,7 +114,7 @@
           "name": "[variables('samplePowerShellRunbookName')]",
           "location": "[resourceGroup().location]",
           "dependsOn": [
-            "[parameters('automationAccountName')]"
+            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
           ],
           "properties": {
             "runbookType": "PowerShell",
@@ -127,6 +126,93 @@
               "version": "1.0.0.0"
             }
           }
+        },
+        {
+          "type": "jobSchedules",
+          "apiVersion": "2015-10-31",
+          "name": "variables('automationScheduleName'))]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+            "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),'1 Hour recurrence')]",
+            "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
+          ],
+          "properties": {
+            "runbook": {
+              "name": "[variables('automationJobName')]"
+            },
+            "schedule": {
+              "name": "1 Hour recurrence"
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Automation/automationAccounts/modules",
+          "apiVersion": "2015-10-31",
+          "name": "[concat(parameters('AutomationAccountName'), '/Az.Accounts')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "https://devopsgallerystorage.blob.core.windows.net:443/packages/az.accounts.2.2.2.nupkg"
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Automation/automationAccounts/modules",
+          "apiVersion": "2015-10-31",
+          "name": "[concat(parameters('AutomationAccountName'), '/Az.Automation')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+            "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "https://devopsgallerystorage.blob.core.windows.net:443/packages/az.automation.1.4.0.nupkg"
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Automation/automationAccounts/modules",
+          "apiVersion": "2015-10-31",
+          "name": "[concat(parameters('AutomationAccountName'), '/Az.OperationalInsights')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+            "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "https://devopsgallerystorage.blob.core.windows.net:443/packages/az.operationalinsights.2.3.0.nupkg"
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Automation/automationAccounts/modules",
+          "apiVersion": "2015-10-31",
+          "name": "[concat(parameters('AutomationAccountName'), '/Az.Resources')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+            "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "https://devopsgallerystorage.blob.core.windows.net:443/packages/az.resources.3.1.0.nupkg"
+            }
+          }
+        },
+        {
+          "type": "Microsoft.Automation/automationAccounts/modules",
+          "apiVersion": "2015-10-31",
+          "name": "[concat(parameters('AutomationAccountName'), '/Az.Storage')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+            "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "https://devopsgallerystorage.blob.core.windows.net:443/packages/az.storage.3.1.0.nupkg"
+            }
+          }
         }
       ]
     },
@@ -136,8 +222,8 @@
       "name": "[concat(parameters('LogAnalyticsWorkspaceName'), '/' , 'Automation')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[parameters('LogAnalyticsWorkspaceName')]",
-        "[parameters('AutomationAccountName')]"
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('LogAnalyticsWorkspaceName'))]",
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
       ],
       "properties": {
         "resourceId": "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
@@ -165,30 +251,11 @@
         "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
       ],
       "properties": {
-        "startTime": "2020-12-08T01:22:00+03:00",
+        "startTime": "[dateTimeAdd(utcnow('u'),'PT5M')]",
         "expiryTime": "9999-12-31T23:59:59.9999999+00:00",
         "interval": 1,
         "frequency": "Hour",
         "timeZone": "Europe/Moscow"
-      }
-    },
-
-    {
-      "type": "Microsoft.Automation/automationAccounts/jobSchedules",
-      "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'),'/',variables('automationScheduleName'))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-        "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),'1 Hour recurrence')]",
-        "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
-      ],
-      "properties": {
-        "runbook": {
-          "name": "[variables('automationJobName')]"
-        },
-        "schedule": {
-          "name": "1 Hour recurrence"
-        }
       }
     },
     {
@@ -224,66 +291,6 @@
           "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction"
         }
       }
-    },
-    {
-      "type": "Microsoft.Automation/automationAccounts/modules",
-      "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'), '/Az.Accounts')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
-      ],
-      "properties": {
-        "contentLink": {}
-      }
-    },
-    {
-      "type": "Microsoft.Automation/automationAccounts/modules",
-      "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'), '/Az.Automation')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
-      ],
-      "properties": {
-        "contentLink": {}
-      }
-    },
-    {
-      "type": "Microsoft.Automation/automationAccounts/modules",
-      "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'), '/Az.OperationalInsights')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
-      ],
-      "properties": {
-        "contentLink": {}
-      }
-    },
-    {
-      "type": "Microsoft.Automation/automationAccounts/modules",
-      "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'), '/Az.Resources')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
-      ],
-      "properties": {
-        "contentLink": {}
-      }
-    },
-    {
-      "type": "Microsoft.Automation/automationAccounts/modules",
-      "apiVersion": "2015-10-31",
-      "name": "[concat(parameters('AutomationAccountName'), '/Az.Storage')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
-      ],
-      "properties": {
-        "contentLink": {}
-      }
     }
-
   ]
 }
