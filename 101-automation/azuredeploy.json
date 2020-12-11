@@ -133,7 +133,7 @@
           "name": "variables('automationScheduleName'))]",
           "dependsOn": [
             "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
-            "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),'1 Hour recurrence')]",
+            "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),'1HourRecurrence')]",
             "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
           ],
           "properties": {
