@@ -39,6 +39,13 @@
         "description": "Automation account name"
       }
     },
+    "scriptName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The sasToken required to access the script location."
+      }
+    },
     "artifactsLocationSasToken": {
       "type": "string",
       "defaultValue": "",
@@ -51,8 +58,7 @@
   "variables":{
         "samplePowerShellRunbookName": "AzureAutomationTutorialScript",
         "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
-        "artifactsLocation":"https://andrelomsharedstorage.blob.core.windows.net/shared",
-        "scriptname":"Check-BlobSize.ps1"
+        "artifactsLocation":"https://andrelomsharedstorage.blob.core.windows.net/shared"
   },
   "resources": [
     {
@@ -99,7 +105,7 @@
             "logVerbose": "false",
             "description": "[variables('samplePowerShellRunbookDescription')]",
             "publishContentLink": {
-              "uri": "[uri(variables('artifactsLocation'), concat(variables('scriptname'), parameters('artifactsLocationSasToken')))]",
+              "uri": "[uri(variables('artifactsLocation'), concat(parameters('scriptname'), parameters('artifactsLocationSasToken')))]",
               "version": "1.0.0.0"
             }
           }

@@ -7,6 +7,9 @@
     },
     "AutomationAccountName": {
       "value": "GEN-UNIQUE"
+    },
+    "scriptName":{
+      "value": "scriptpath/scriptname"
     }
   }
 }
