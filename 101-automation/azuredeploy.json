@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.2",
+  "contentVersion": "1.0.0.3",
   "parameters": {
     "LogAnalyticsWorkspaceName": {
       "type": "string",
@@ -32,7 +32,7 @@
         "description": "Number of days to retain data."
       }
     },
-    
+
     "AutomationAccountName": {
       "type": "string",
       "metadata": {
@@ -46,19 +46,37 @@
         "description": "The sasToken required to access the script location."
       }
     },
+    "EmailToAlert": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Email where to send the alerts to"
+      }
+    },
+
     "artifactsLocationSasToken": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
         "description": "The sasToken required to access the script location."
       }
+    },
+    "Growththreshold": {
+      "type": "int",
+      "defaultValue": 10,
+      "metadata": {
+        "description": "The threshold increase of storage account for alert triggering"
+      }
     }
   },
-  
-  "variables":{
-        "samplePowerShellRunbookName": "AzureAutomationTutorialScript",
-        "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
-        "artifactsLocation":"https://andrelomshareddocs.blob.core.windows.net/shared"
+
+  "variables": {
+    "samplePowerShellRunbookName": "AzureAutomationTutorialScript",
+    "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
+    "artifactsLocation": "https://andrelomshareddocs.blob.core.windows.net/shared",
+    "automationJobName": "StorageAccount_Checker",
+    "automationScheduleName": "StorageAccount_Checker_Schedule",
+    "AlertName": "Storage_Consumption_Alert"
   },
   "resources": [
     {
@@ -124,6 +142,148 @@
       "properties": {
         "resourceId": "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
       }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/jobs",
+      "apiVersion": "2017-05-15-preview",
+      "name": "[concat(parameters('AutomationAccountName'),'/',variables('automationJobName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+        "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
+      ],
+      "properties": {
+        "runbook": {
+          "name": "Storage_Size_Checker"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/schedules",
+      "apiVersion": "2015-10-31",
+      "name": "[concat(parameters('AutomationAccountName'),'/','1 Hour recurrence')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
+      ],
+      "properties": {
+        "startTime": "2020-12-08T01:22:00+03:00",
+        "expiryTime": "9999-12-31T23:59:59.9999999+00:00",
+        "interval": 1,
+        "frequency": "Hour",
+        "timeZone": "Europe/Moscow"
+      }
+    },
+
+    {
+      "type": "Microsoft.Automation/automationAccounts/jobSchedules",
+      "apiVersion": "2015-10-31",
+      "name": "[concat(parameters('AutomationAccountName'),'/',variables('automationScheduleName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+        "[resourceId('Microsoft.Automation/automationAccounts/schedules', parameters('AutomationAccountName'),'1 Hour recurrence')]",
+        "[resourceId('Microsoft.Automation/automationAccounts/runbooks', parameters('AutomationAccountName'),variables('samplePowerShellRunbookName'))]"
+      ],
+      "properties": {
+        "runbook": {
+          "name": "[variables('automationJobName')]"
+        },
+        "schedule": {
+          "name": "1 Hour recurrence"
+        }
+      }
+    },
+    {
+      "type": "microsoft.insights/scheduledqueryrules",
+      "apiVersion": "2018-04-16",
+      "name": "[variables('AlertName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('microsoft.operationalinsights/workspaces', parameters('LogAnalyticsWorkspaceName'))]"
+      ],
+      "properties": {
+        "enabled": "true",
+        "source": {
+          "query": "[concat('Storage_CL | where GrowthFromLastRunPct_d >',parameters('Growththreshold'))]",
+          "authorizedResources": [],
+          "dataSourceId": "[resourceId('microsoft.operationalinsights/workspaces', parameters('LogAnalyticsWorkspaceName'))]",
+          "queryType": "ResultCount"
+        },
+        "schedule": {
+          "frequencyInMinutes": 5,
+          "timeWindowInMinutes": 60
+        },
+        "action": {
+          "severity": "3",
+          "aznsAction": {
+            "actionGroup": [],
+            "emailSubject": "[parameters('EmailToAlert')]"
+          },
+          "trigger": {
+            "thresholdOperator": "GreaterThanOrEqual",
+            "threshold": 1
+          },
+          "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/modules",
+      "apiVersion": "2015-10-31",
+      "name": "[concat(parameters('AutomationAccountName'), '/Az.Accounts')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]"
+      ],
+      "properties": {
+        "contentLink": {}
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/modules",
+      "apiVersion": "2015-10-31",
+      "name": "[concat(parameters('AutomationAccountName'), '/Az.Automation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+      ],
+      "properties": {
+        "contentLink": {}
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/modules",
+      "apiVersion": "2015-10-31",
+      "name": "[concat(parameters('AutomationAccountName'), '/Az.OperationalInsights')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+      ],
+      "properties": {
+        "contentLink": {}
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/modules",
+      "apiVersion": "2015-10-31",
+      "name": "[concat(parameters('AutomationAccountName'), '/Az.Resources')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+      ],
+      "properties": {
+        "contentLink": {}
+      }
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts/modules",
+      "apiVersion": "2015-10-31",
+      "name": "[concat(parameters('AutomationAccountName'), '/Az.Storage')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Automation/automationAccounts', parameters('AutomationAccountName'))]",
+        "[resourceId('Microsoft.Automation/automationAccounts/modules', parameters('AutomationAccountName'),'Az.Accounts')]"
+      ],
+      "properties": {
+        "contentLink": {}
+      }
     }
+
   ]
 }
