@@ -76,7 +76,7 @@
     "artifactsLocation": "https://andrelomshareddocs.blob.core.windows.net/shared",
     "automationJobName": "StorageAccount_Checker",
     "AlertName": "Storage_Consumption_Alert",
-    "ScheduleName":"[variables('ScheduleName')]"
+    "ScheduleName":"1HourSchedule"
   },
   "resources": [
     {
