@@ -58,7 +58,7 @@
   "variables":{
         "samplePowerShellRunbookName": "AzureAutomationTutorialScript",
         "samplePowerShellRunbookDescription": "An example runbook that gets all the Resource Manager resources by using the Run As account (service principal).",
-        "artifactsLocation":"https://andrelomsharedstorage.blob.core.windows.net/shared"
+        "artifactsLocation":"https://andrelomshareddocs.blob.core.windows.net/shared"
   },
   "resources": [
     {
