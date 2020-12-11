@@ -39,14 +39,6 @@
         "description": "Automation account name"
       }
     },
-    "DeploymentLocation": {
-      "type": "string",
-      "defaultValue": "West Europe",
-      "metadata": {
-        "description": "Specifies the location in which to perform the deployment"
-      }
-    },
-    
     "artifactsLocationSasToken": {
       "type": "string",
       "defaultValue": "",
@@ -67,7 +59,7 @@
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2020-08-01",
       "name": "[parameters('LogAnalyticsWorkspaceName')]",
-      "location": "[parameters('DeploymentLocation')]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "sku": {
           "name": "[parameters('sku')]"
@@ -97,7 +89,7 @@
           "type": "runbooks",
           "apiVersion": "2018-06-30",
           "name": "[variables('samplePowerShellRunbookName')]",
-          "location": "[parameters('DeploymentLocation')]",
+          "location": "[resourceGroup().location]",
           "dependsOn": [
             "[parameters('automationAccountName')]"
           ],
@@ -118,7 +110,7 @@
       "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
       "apiVersion": "2020-08-01",
       "name": "[concat(parameters('LogAnalyticsWorkspaceName'), '/' , 'Automation')]",
-      "location": "[parameters('DeploymentLocation')]",
+      "location": "[resourceGroup().location]",
       "dependsOn": [
         "[parameters('LogAnalyticsWorkspaceName')]",
         "[parameters('AutomationAccountName')]"

@@ -7,9 +7,6 @@
     },
     "AutomationAccountName": {
       "value": "GEN-UNIQUE"
-    },
-    "DeploymentLocation": {
-      "value": "westeurope"
     }
   }
 }
